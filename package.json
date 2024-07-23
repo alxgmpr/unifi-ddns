@@ -1,0 +1,14 @@
+{
+  "name": "unifi-ddns",
+  "version": "1.0.0",
+  "description": "A Cloudflare Worker script that provides a UniFi-compatible DDNS API to dynamically update the IP address of a DNS A record.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "prettier": "^3.3.3"
+  }
+}

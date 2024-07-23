@@ -15,10 +15,10 @@ Ensure you have a Cloudflare account and your domain is configured to point to C
 1. Deploy the Worker: [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/workerforce/unifi-ddns)
 2. Navigate to the Cloudflare Workers dashboard.
 3. After deployment, note the `\*.workers.dev` route.
-4. Create an API token to update DNS records: 
+4. Create an API token to update DNS records:
    - Go to https://dash.cloudflare.com/profile/api-tokens.
    - Click "Create token", select "Create Custom Token".
-   - Choose **Zone:DNS:Edit** for permissions, and include your zone under "Zone Resources". 
+   - Choose **Zone:DNS:Edit** for permissions, and include your zone under "Zone Resources".
    - Copy your API Key for later use in UniFi OS Controller configuration.
 
 #### Install With Wrangler CLI
@@ -43,6 +43,7 @@ Ensure you have a Cloudflare account and your domain is configured to point to C
      - Remove `https://` from the URL.
 
 #### Testing Changes - UDM-Pro
+
 To test the configuration and force an update on a UDM-Pro:
 
 1. SSH into your UniFi device.
@@ -52,6 +53,7 @@ To test the configuration and force an update on a UDM-Pro:
 5. Check `/var/log/messages` for related error messages.
 
 #### Testing Changes - USG
+
 To test the configuration and force an update on a USG:
 
 1. SSH into your USG device.
