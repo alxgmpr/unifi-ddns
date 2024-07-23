@@ -116,7 +116,7 @@ async function updateDNSRecords(cloudflare, hostnames, ip, name) {
 }
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env, _ctx) {
     try {
       return await handleRequest(request, env);
     } catch (err) {
