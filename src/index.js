@@ -80,10 +80,10 @@ async function handleRequest(request, env) {
 
   for (const ip of ips) {
     await updateDNSRecords(cloudflare, hostnames, ip.trim(), username);
-  }
 
-  if (accountId && accessGroupId) {
-    await cloudflare.updateAccessGroup(accountId, accessGroupId, ip);
+    if (accountId && accessGroupId) {
+      await cloudflare.updateAccessGroup(accountId, accessGroupId, ip);
+    }
   }
 
   return new Response("good", {
