@@ -2,3 +2,5 @@ node_modules
 .mf/cert
 secrets.txt
 .idea
+dist/
+.wrangler/

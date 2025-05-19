@@ -6,6 +6,35 @@ A Cloudflare Worker script that provides a UniFi-compatible DDNS API to dynamica
 
 UniFi Dream Machine Pro (UDM-Pro) or UniFi Security Gateway (USG) users may need to update Cloudflare domain name DNS records when their public IP address changes. UniFi does not natively support Cloudflare as a DDNS provider.
 
+## Development
+
+This project is built with TypeScript and uses Wrangler for development and deployment.
+
+### Prerequisites
+
+- Node.js (v14 or newer)
+- npm or yarn
+
+### Setup
+
+1. Clone this repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Build the TypeScript code:
+   ```
+   npm run build
+   ```
+4. Start local development server:
+   ```
+   npm run dev
+   ```
+5. Deploy to Cloudflare Workers:
+   ```
+   npm run deploy
+   ```
+
 ### Configuring Cloudflare
 
 Ensure you have a Cloudflare account and your domain is configured to point to Cloudflare nameservers.

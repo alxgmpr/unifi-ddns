@@ -1,23 +1,29 @@
-import { Cloudflare } from "./cloudflare.js";
+import { ExecutionContext } from "@cloudflare/workers-types/experimental";
+import { CloudflareClient } from "./cloudflare-client";
+
+interface Env {
+  DDNS_TOKEN: string;
+  ACCOUNT_ID?: string;
+  ACCESS_GROUP_ID?: string;
+}
 
 class BadRequestException extends Error {
-  constructor(reason) {
+  status: number;
+  statusText: string;
+
+  constructor(reason: string) {
     super(reason);
     this.status = 400;
     this.statusText = "Bad Request";
   }
 }
 
-function requireHttps(request) {
-  const { protocol } = new URL(request.url);
-  const forwardedProtocol = request.headers.get("x-forwarded-proto");
-
-  if (protocol !== "https:" || forwardedProtocol !== "https") {
-    throw new BadRequestException("Please use a HTTPS connection.");
-  }
+interface AuthCredentials {
+  username?: string;
+  password?: string;
 }
 
-function parseBasicAuth(request) {
+function parseBasicAuth(request: Request): AuthCredentials {
   const authorization = request.headers.get("Authorization");
   if (!authorization) return {};
 
@@ -35,8 +41,7 @@ function parseBasicAuth(request) {
   };
 }
 
-async function handleRequest(request, env) {
-  requireHttps(request);
+async function handleRequest(request: Request, env: Env): Promise<Response> {
   const { pathname, searchParams } = new URL(request.url);
 
   if (pathname === "/favicon.ico" || pathname === "/robots.txt") {
@@ -76,7 +81,7 @@ async function handleRequest(request, env) {
     );
   }
 
-  const cloudflare = new Cloudflare(token || env.DDNS_TOKEN);
+  const cloudflare = new CloudflareClient(token || env.DDNS_TOKEN);
 
   for (const ip of ips) {
     await updateDNSRecords(cloudflare, hostnames, ip.trim(), username);
@@ -95,7 +100,12 @@ async function handleRequest(request, env) {
   });
 }
 
-async function updateDNSRecords(cloudflare, hostnames, ip, name) {
+async function updateDNSRecords(
+  cloudflare: CloudflareClient,
+  hostnames: string[],
+  ip: string,
+  name?: string,
+): Promise<void> {
   const isIPV4 = ip.includes(".");
   const zones = new Map();
 
@@ -116,10 +126,14 @@ async function updateDNSRecords(cloudflare, hostnames, ip, name) {
 }
 
 export default {
-  async fetch(request, env, _ctx) {
+  async fetch(
+    request: Request,
+    env: Env,
+    _ctx: ExecutionContext,
+  ): Promise<Response> {
     try {
       return await handleRequest(request, env);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       const message = err.reason || err.message || "Unknown Error";
       return new Response(message, {
