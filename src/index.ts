@@ -1,5 +1,5 @@
 import { ClientOptions, Cloudflare } from 'cloudflare';
-import { AAAARecord, ARecord } from 'cloudflare/src/resources/dns/records.js';
+import { AAAARecord, ARecord } from 'cloudflare/resources/dns/records';
 type AddressableRecord = AAAARecord | ARecord;
 
 class HttpError extends Error {
@@ -83,7 +83,22 @@ function constructDNSRecords(request: Request): AddressableRecord[] {
 	return records;
 }
 
-async function update(clientOptions: ClientOptions, newRecords: AddressableRecord[]): Promise<Response> {
+async function updateAccessGroup(cloudflare: Cloudflare, accountId: string, groupId: string, ip: string): Promise<void> {
+	await cloudflare.put(`/accounts/${accountId}/access/groups/${groupId}`, {
+		body: {
+			name: 'Local IP Address',
+			include: [{ ip: { ip: `${ip}/32` } }],
+		},
+	});
+	console.log('Access group ' + groupId + ' updated successfully to ' + ip);
+}
+
+async function update(
+	clientOptions: ClientOptions,
+	newRecords: AddressableRecord[],
+	env: Env,
+	request: Request,
+): Promise<Response> {
 	const cloudflare = new Cloudflare(clientOptions);
 
 	const tokenStatus = (await cloudflare.user.tokens.verify()).status;
@@ -133,11 +148,23 @@ async function update(clientOptions: ClientOptions, newRecords: AddressableRecor
 		console.log('DNS record for ' + newRecord.name + '(' + newRecord.type + ') updated successfully to ' + newRecord.content);
 	}
 
+	// Optionally update Cloudflare Access group with the requester's IP
+	const url = new URL(request.url);
+	const accountId = url.searchParams.get('account')?.trim() || env?.ACCOUNT_ID;
+	const accessGroupId = url.searchParams.get('group')?.trim() || env?.ACCESS_GROUP_ID;
+
+	if (accountId && accessGroupId) {
+		const ip = request.headers.get('CF-Connecting-IP');
+		if (ip) {
+			await updateAccessGroup(cloudflare, accountId, accessGroupId, ip);
+		}
+	}
+
 	return new Response('OK', { status: 200 });
 }
 
 export default {
-	async fetch(request): Promise<Response> {
+	async fetch(request, env): Promise<Response> {
 		console.log('Requester IP: ' + request.headers.get('CF-Connecting-IP'));
 		console.log(request.method + ': ' + request.url);
 		console.log('Body: ' + (await request.text()));
@@ -148,7 +175,7 @@ export default {
 			const records = constructDNSRecords(request);
 
 			// Run the update function
-			return await update(clientOptions, records);
+			return await update(clientOptions, records, env, request);
 		} catch (error) {
 			if (error instanceof HttpError) {
 				console.log('Error updating DNS record: ' + error.message);

@@ -2,4 +2,6 @@
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface,@typescript-eslint/no-empty-object-type
 interface Env {
+	ACCOUNT_ID?: string;
+	ACCESS_GROUP_ID?: string;
 }
